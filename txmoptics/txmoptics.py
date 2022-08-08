@@ -9,8 +9,18 @@ import signal
 from txmoptics import util
 from txmoptics import log
 from epics import PV
+import re
 
+EPSILON = .001
 
+def isfloat(x):
+    try:
+        a = float(x)
+    except (TypeError, ValueError):
+        return False
+    else:
+        return x.find('.')!=-1
+    
 class TXMOptics():
     """ Class for controlling TXM optics via EPICS
 
@@ -91,34 +101,48 @@ class TXMOptics():
 
         prefix = self.pv_prefixes['Camera']
         self.control_pvs['CamAcquireTime'] = PV(prefix + 'cam1:AcquireTime')
-        self.control_pvs['CamTrans1Type'] = PV(prefix + 'Trans1:Type')
+        self.control_pvs['CamAcquire'] = PV(prefix + 'cam1:Acquire')
+        self.control_pvs['CamTrans1Type'] = PV(prefix + 'Trans1:Type')        
+        self.control_pvs['CamArraySizeXRBV']        = PV(prefix + 'cam1:ArraySizeX_RBV')
+        self.control_pvs['CamArraySizeYRBV']        = PV(prefix + 'cam1:ArraySizeY_RBV')
+        self.control_pvs['CamMinX']        = PV(prefix + 'cam1:MinX')
+        self.control_pvs['CamMinY']        = PV(prefix + 'cam1:MinY')
+        self.control_pvs['CamMinXRBV']        = PV(prefix + 'cam1:MinX_RBV')
+        self.control_pvs['CamMinYRBV']        = PV(prefix + 'cam1:MinY_RBV')
+        self.control_pvs['CamSizeX']        = PV(prefix + 'cam1:SizeX')
+        self.control_pvs['CamSizeY']        = PV(prefix + 'cam1:SizeY')
+        self.control_pvs['CamSizeXRBV']        = PV(prefix + 'cam1:SizeX_RBV')
+        self.control_pvs['CamSizeYRBV']        = PV(prefix + 'cam1:SizeY_RBV')
+        self.control_pvs['CamMaxSizeXRBV']        = PV(prefix + 'cam1:MaxSizeX_RBV')
+        self.control_pvs['CamMaxSizeYRBV']        = PV(prefix + 'cam1:MaxSizeY_RBV')
+        
+        self.control_pvs['OPEnableCallbacks'] = PV(prefix + 'Over1:EnableCallbacks')
+        self.control_pvs['OP1Use']            = PV(prefix + 'Over1:1:Use')        
+        self.control_pvs['OP1CenterX']        = PV(prefix + 'Over1:1:CenterX')        
+        self.control_pvs['OP1CenterY']        = PV(prefix + 'Over1:1:CenterY')        
+        self.control_pvs['OP2Use']            = PV(prefix + 'Over1:2:Use')        
+        self.control_pvs['OP2CenterX']        = PV(prefix + 'Over1:2:CenterX')        
+        self.control_pvs['OP2CenterY']        = PV(prefix + 'Over1:2:CenterY')    
 
-        #Define PVs we will need for setting the user coordinates to zero
-        phase_ring_pv_name = self.control_pvs['PhaseRingY'].pvname
-        self.control_pvs['PhaseRingYSet']        = PV(phase_ring_pv_name + '.SET')
-        diffuser_pv_name = self.control_pvs['DiffuserX'].pvname
-        self.control_pvs['DiffuserXSet']        = PV(diffuser_pv_name + '.SET')
-        beamstop_pv_name = self.control_pvs['BeamstopY'].pvname
-        self.control_pvs['BeamstopYSet']        = PV(beamstop_pv_name + '.SET')
-        pinhole_pv_name = self.control_pvs['PinholeY'].pvname
-        self.control_pvs['PinholeYSet']        = PV(pinhole_pv_name + '.SET')
-        condenser_pv_name = self.control_pvs['CondenserY'].pvname
-        self.control_pvs['CondenserYSet']        = PV(condenser_pv_name + '.SET')
-        zone_plate_pv_name = self.control_pvs['ZonePlateY'].pvname
-        self.control_pvs['ZonePlateYSet']        = PV(zone_plate_pv_name + '.SET')
 
-        # All Stop ioc PVs (--> add to the gui)
-        iocs = ['32idcTXM:','32idcPLC:', '32idcEXP:', '32idb:', '32idcUC8:', '32idcMC:']
-        self.allstop_pvs = [PV(ioc+'allstop') for ioc in iocs]
+        self.control_pvs['EnergyMonochromator'] = PV('32ida:BraggEAO.VAL')
                 
         self.epics_pvs = {**self.config_pvs, **self.control_pvs}
 
         for epics_pv in ('MoveCRLIn', 'MoveCRLOut', 'MovePhaseRingIn', 'MovePhaseRingOut', 'MoveDiffuserIn',
                          'MoveDiffuserOut', 'MoveBeamstopIn', 'MoveBeamstopOut', 'MovePinholeIn', 'MovePinholeOut',
-                         'MoveCondenserIn', 'MoveCondenserOut', 'MoveZonePlateIn', 'MoveZonePlateOut',
-                         'MoveAllIn', 'MoveAllOut', 'AllStop', 'SetAllToZero'):
+                         'MoveCondenserIn', 'MoveCondenserOut', 'MoveZonePlateIn', 'MoveZonePlateOut', 'MoveFurnaceIn', 'MoveFurnaceOut',
+                         'MoveAllIn', 'MoveAllOut', 'AllStop', 'SaveAllPVs', 'LoadAllPVs', 'CrossSelect', 'EnergySet', 'Crop'):
+            self.epics_pvs[epics_pv].put(0)
             self.epics_pvs[epics_pv].add_callback(self.pv_callback)
-
+        for epics_pv in ('ShutterBClose', 'ShutterBStatus'):
+            self.epics_pvs[epics_pv].add_callback(self.pv_callback)            
+        self.epics_pvs['EnergyBusy'].put(0,wait=True)
+        
+        # Start the watchdog timer thread
+        thread = threading.Thread(target=self.reset_watchdog, args=(), daemon=True)
+        thread.start()
+        
         log.setup_custom_logger("./txmoptics.log")
 
     def read_pv_file(self, pv_file_name, macros):
@@ -253,6 +277,12 @@ class TXMOptics():
         elif (pvname.find('MoveZonePlateOut') != -1) and (value == 1):
             thread = threading.Thread(target=self.move_zoneplate_out, args=())
             thread.start()
+        elif (pvname.find('MoveFurnaceIn') != -1) and (value == 1):
+            thread = threading.Thread(target=self.move_furnace_in, args=())
+            thread.start()
+        elif (pvname.find('MoveFurnaceOut') != -1) and (value == 1):
+            thread = threading.Thread(target=self.move_furnace_out, args=())
+            thread.start()            
         elif (pvname.find('MoveAllIn') != -1) and (value == 1):
             thread = threading.Thread(target=self.move_all_in, args=())
             thread.start()
@@ -261,28 +291,29 @@ class TXMOptics():
             thread.start()
         elif (pvname.find('AllStop') != -1) and (value == 1):
             thread = threading.Thread(target=self.all_stop, args=())
+            thread.start()       
+        elif (pvname.find('SaveAllPVs') != -1) and (value == 1):
+            thread = threading.Thread(target=self.save_all_pvs, args=())
+            thread.start()       
+        elif (pvname.find('LoadAllPVs') != -1) and (value == 1):
+            thread = threading.Thread(target=self.load_all_pvs, args=())
+            thread.start()       
+        elif (pvname.find('CrossSelect') != -1) and ((value == 0) or (value == 1)):
+            thread = threading.Thread(target=self.cross_select, args=())
             thread.start()
-        elif (pvname.find('SetPhaseRingToZero') != -1) and (value == 1):
-            thread = threading.Thread(target=self.set_phasering_to_zero, args=())
-            thread.start()
-        elif (pvname.find('SetDiffuserToZero') != -1) and (value == 1):
-            thread = threading.Thread(target=self.set_diffuser_to_zero, args=())
-            thread.start()
-        elif (pvname.find('SetBeamstopToZero') != -1) and (value == 1):
-            thread = threading.Thread(target=self.set_beamstop_to_zero, args=())
-            thread.start()
-        elif (pvname.find('SetPinholeToZero') != -1) and (value == 1):
-            thread = threading.Thread(target=self.set_pinhole_to_zero, args=())
-            thread.start()
-        elif (pvname.find('SetCondenserToZero') != -1) and (value == 1):
-            thread = threading.Thread(target=self.set_condenser_to_zero, args=())
-            thread.start()
-        elif (pvname.find('SetZonePlateToZero') != -1) and (value == 1):
-            thread = threading.Thread(target=self.set_zone_plate_to_zero, args=())
-            thread.start()
-        elif (pvname.find('SetAllToZero') != -1) and (value == 1):
-            thread = threading.Thread(target=self.set_all_to_zero, args=())
-            thread.start()
+        elif (pvname.find('B:Close') != -1) and (value == 1):
+            thread = threading.Thread(target=self.shutter_b_close, args=())
+            thread.start()            
+        elif (pvname.find('STA_B') != -1) and (value == 0):
+            thread = threading.Thread(target=self.shutter_b_status, args=())
+            thread.start()            
+        elif (pvname.find('EnergySet') != -1) and (value == 1):
+            thread = threading.Thread(target=self.energy_change, args=())
+            thread.start()            
+        elif (pvname.find('Crop') != -1) and (value ==1):
+            thread = threading.Thread(target=self.crop_detector, args=())
+            thread.start()            
+        
 
     def move_crl_in(self):
         """Moves the crl in.
@@ -409,6 +440,24 @@ class TXMOptics():
 
         self.epics_pvs['MovePhaseRingOut'].put('Done')
 
+    def move_furnace_in(self):
+        """Moves the furnace in.
+        """
+        if(self.epics_pvs['FurnaceInOutUse'].value):
+            position = self.epics_pvs['FurnaceInY'].value
+            self.epics_pvs['FurnaceY'].put(position, wait=True)
+
+        self.epics_pvs['MoveFurnaceIn'].put('Done')
+
+    def move_furnace_out(self):
+        """Moves the furnace out.
+        """
+        if(self.epics_pvs['FurnaceInOutUse'].value):
+            position = self.epics_pvs['FurnaceOutY'].value
+            self.epics_pvs['FurnaceY'].put(position, wait=True)
+
+        self.epics_pvs['MoveFurnaceOut'].put('Done')
+
     def set_exposure_time_in(self):
         """Set exposure time in.
         """
@@ -443,19 +492,18 @@ class TXMOptics():
             positionh = self.epics_pvs['BPMHSetPointOut'].value
             self.epics_pvs['BPMVSetPoint'].put(positionv, wait=True)
             self.epics_pvs['BPMHSetPoint'].put(positionh, wait=True)            
-    
+
     def transform_image_in(self):
         """
         Transform image in 
         """
-        self.epics_pvs['CamTrans1Type'].put(2, wait=True) # Rot180
+        self.epics_pvs['CamTrans1Type'].put(2, wait=True) # None
         
-    
     def transform_image_out(self):
         """
         Transform image out 
         """
-        self.epics_pvs['CamTrans1Type'].put(0, wait=True) # None
+        self.epics_pvs['CamTrans1Type'].put(0, wait=True) # Rotate180
                 
     def move_all_in(self):
         """Moves all in
@@ -468,6 +516,7 @@ class TXMOptics():
                  self.move_pinhole_in,
                  self.move_condenser_in,
                  self.move_zoneplate_in,
+                 self.move_furnace_in,
                  self.set_exposure_time_in,
                  self.transform_image_in,
                  ]
@@ -488,6 +537,7 @@ class TXMOptics():
                  self.move_pinhole_out,
                  self.move_condenser_out,
                  self.move_zoneplate_out,
+                 self.move_furnace_out,
                  self.set_exposure_time_out,
                  self.transform_image_out,
                  ]
@@ -496,79 +546,239 @@ class TXMOptics():
         [t.join() for t in threads]
 
         self.epics_pvs['MoveAllOut'].put('Done')
-
+        
     def all_stop(self):
         """Stop all iocs motors
         """     
-        [pv.put(1,wait=True) for pv in self.allstop_pvs]
+        iocs = [self.pv_prefixes['IOC'+str(k)] for k in range(5)]
+        print(iocs)
+        allstop_pvs = [PV(ioc+'allstop') for ioc in iocs]                        
+        [pv.put(1,wait=True) for pv in allstop_pvs]
         self.epics_pvs['AllStop'].put(0,wait=True)
+    
+    def save_all_pvs(self):
+        """Save all PVs from txm_main.adl screen to a file
+        """
+        if(self.epics_pvs['LoadAllPVs'].get()==1):
+            self.epics_pvs['SaveAllPVs'].put(0,wait=True)       
+            return
+        file_name = self.epics_pvs['FileAllPVs'].get()
+        # read prefixes
+        with open('/home/beams/USERTXM/epics/synApps/support/txmoptics/iocBoot/iocTXMOptics/start_medm','r') as fid:    
+            prefixes = re.findall(r"-macro \"(.*)\"", fid.read())[0].split(', ')
+        # take all replacements
+        repl = []
+        for k in prefixes:
+            repl.append(k.split('='))
+        # read adl file
+        with open('/home/beams/USERTXM/epics/synApps/support/txmoptics/txmOpticsApp/op/adl/txm_main.adl','r') as fid:    
+            s = fid.read()
+        # replace in adl file
+        for k in repl:
+            s = s.replace('$('+k[0]+')',k[1])
+        # take pvs
+        pvs = []
+        pvs = re.findall(r"chan=\"(.*?)\"", s)
         
-    def set_all_to_zero(self):
-        """Set all user coordinates to zero
+        # save values to a txt file 
+        try:
+            with open(file_name,'w') as fid:
+                energy = self.epics_pvs['EnergyMonochromator'].get()
+                fid.write('energy '+ str(energy) +'\n')                
+                for k in pvs:
+                    if k.find('.VAL')!=-1:
+                        p = PV(k)
+                        #time.sleep(0.1)
+                        val = p.get(as_string=True)
+                        if(val is not None and isfloat(val)):
+                            print(k,val)                        
+                            fid.write(k[:-4]+' '+val+'\n')
+        except:
+            log.error('File %s cannot be created', file_name)
+        self.epics_pvs['SaveAllPVs'].put(0,wait=True)        
+    
+    def load_all_pvs(self):
+        """Load all PVs to txm_main.adl screen to a file
         """
-        funcs = [self.set_phasering_to_zero,
-                 self.set_diffuser_to_zero,
-                 self.set_beamstop_to_zero,
-                 self.set_pinhole_to_zero,
-                 self.set_condenser_to_zero,
-                 self.set_zone_plate_to_zero,
-                 ]
-        threads = [threading.Thread(target=f, args=()) for f in funcs]
-        [t.start() for t in threads]
-        [t.join() for t in threads]
+        if(self.epics_pvs['SaveAllPVs'].get()==1):
+            self.epics_pvs['LoadAllPVs'].put(0,wait=True)        
+            return
+        file_name = self.epics_pvs['FileAllPVs'].get()        
+        try:
+            with open(file_name,'r') as fid:
+                for pv_val in fid.readlines():
+                    pv, val = pv_val[:-1].split(' ')
+                    print(pv,val)
+                    try:
+                        PV(pv).put(val,wait=True)
+                    except:
+                        pass
+        except:
+            log.error('File %s does not exist or corrupted', file_name)
+        self.epics_pvs['LoadAllPVs'].put(0,wait=True)
 
-        self.epics_pvs['SetAllToZero'].put('Done')
-
-    def set_phasering_to_zero(self):
-        """Set the phase ring user coordinate to zero.
+    def cross_select(self):
+        """Plot the cross in imageJ.
         """
-        if(self.epics_pvs['PhaseRingSetUserCoordinateToZeroUse'].value):
-            self.epics_pvs['PhaseRingYSet'].put('Set', wait=True)
-            self.epics_pvs['PhaseRingY'].put(0, wait=True)
-            self.epics_pvs['PhaseRingYSet'].put('Use', wait=True)
-        self.epics_pvs['SetPhaseRingToZero'].put('Done')
+    
 
-    def set_diffuser_to_zero(self):
-        """Set the diffuser user coordinate to zero.
-        """
-        if(self.epics_pvs['DiffuserSetUserCoordinateToZeroUse'].value):
-            self.epics_pvs['DiffuserXSet'].put('Set', wait=True)
-            self.epics_pvs['DiffuserX'].put(0, wait=True)
-            self.epics_pvs['DiffuserXSet'].put('Use', wait=True)
-        self.epics_pvs['SetDiffuserToZero'].put('Done')
+        if (self.epics_pvs['CrossSelect'].get() == 0):
+            sizex = int(self.epics_pvs['CamSizeXRBV'].get())
+            sizey = int(self.epics_pvs['CamSizeYRBV'].get())
+            self.epics_pvs['OP1CenterX'].put(sizex//2)
+            self.epics_pvs['OP1CenterY'].put(sizey//2)
+            self.control_pvs['OP1Use'].put(1)
+            self.epics_pvs['OP2CenterX'].put(sizex//2)
+            self.epics_pvs['OP2CenterY'].put(sizey//2)
+            self.control_pvs['OP2Use'].put(1)
+            log.info('Cross at %d %d is enable' % (sizex//2,sizey//2))
+        else:
+            self.control_pvs['OP1Use'].put(0)
+            self.control_pvs['OP2Use'].put(0)
+            log.info('Cross is disabled')
 
-    def set_beamstop_to_zero(self):
-        """Set the beamstop user coordinate to zero.
-        """
-        if(self.epics_pvs['BeamstopSetUserCoordinateToZeroUse'].value):
-            self.epics_pvs['BeamstopYSet'].put('Set', wait=True)
-            self.epics_pvs['BeamstopY'].put(0, wait=True)
-            self.epics_pvs['BeamstopYSet'].put('Use', wait=True)
-        self.epics_pvs['SetBeamstopToZero'].put('Done')
+ 
+    def shutter_b_close(self):        
+        if (self.epics_pvs['ShutterCallback'].get() == 0):
+            log.info('Stop BPM')
+            self.epics_pvs['BPMVFeedback'].put(0)
+            self.epics_pvs['BPMHFeedback'].put(0)  
+        
+    def shutter_b_status(self):
+        if (self.epics_pvs['ShutterCallback'].get() == 0):
+            log.info('Start BPM')
+            self.epics_pvs['BPMVFeedback'].put(1)
+            self.epics_pvs['BPMHFeedback'].put(1)  
 
-    def set_pinhole_to_zero(self):
-        """Set the pinhole user coordinate to zero.
-        """
-        if(self.epics_pvs['PinholeSetUserCoordinateToZeroUse'].value):
-            self.epics_pvs['PinholeYSet'].put('Set', wait=True)
-            self.epics_pvs['PinholeY'].put(0, wait=True)
-            self.epics_pvs['PinholeYSet'].put('Use', wait=True)
-        self.epics_pvs['SetPinholeToZero'].put('Done')
+    def energy_change(self):
+        if self.epics_pvs['EnergyBusy'].get() == 0:
+            self.epics_pvs['EnergyBusy'].put(1)
+            self.epics_pvs['BPMVFeedback'].put(0)
+            self.epics_pvs['BPMHFeedback'].put(0)      
+            energy = float(self.epics_pvs["Energy"].get())
+            log.info("TxmOptics: change energy to %.2f",energy)
+            
+            log.info('move monochromator')
+            self.epics_pvs['DCMputEnergy'].put(energy)
+            log.info('move undulator')
+            self.epics_pvs['GAPputEnergy'].put(energy+0.15)
+            self.wait_pv(self.epics_pvs['DCMputEnergyRBV'],energy)
+            self.wait_pv(self.epics_pvs['GAPputEnergyRBV'],energy+0.15)
+            
+            time.sleep(1)# possible backlash/stabilization, more??
+            if self.epics_pvs['EnergyUseCalibration'].get(as_string=True) == 'Yes':                
+                try:
+                    # read pvs for 2 energies
+                    pvs1, pvs2, vals1, vals2 = [],[],[],[]
+                    with open(self.epics_pvs['EnergyCalibrationFileOne'].get()) as fid:
+                        for pv_val in fid.readlines():
+                            pv, val = pv_val[:-1].split(' ')
+                            pvs1.append(pv)
+                            vals1.append(float(val))
+                    with open(self.epics_pvs['EnergyCalibrationFileTwo'].get()) as fid:
+                        for pv_val in fid.readlines():
+                            pv, val = pv_val[:-1].split(' ')
+                            pvs2.append(pv)
+                            vals2.append(float(val))                    
+                    
+                    for k in range(len(pvs1)):
+                        if(pvs1[k]!=pvs2[k]):                            
+                            raise Exception()                            
+                    if(np.abs(vals2[0]-vals1[0])<0.001):            
+                        raise Exception()           
+                    vals = []                     
+                    for k in range(len(pvs1)):
+                        vals.append(vals1[k]+(energy-vals1[0])*(vals2[k]-vals1[k])/(vals2[0]-vals1[0]))               
+                    # set new pvs  
+                    for k in range(1,len(pvs1)):# skip energy line                        
+                        if pvs1[k]==self.epics_pvs['DetectorZ'].pvname:                            
+                            log.info('old Detector Z %3.3f', self.epics_pvs['DetectorZ'].get())
+                            self.epics_pvs['DetectorZ'].put(vals[k],wait=True)                                                        
+                            log.info('new Detector Z %3.3f', self.epics_pvs['DetectorZ'].get())
+                        if pvs1[k]==self.epics_pvs['ZonePlateZ'].pvname:                            
+                            log.info('old Zone plate Z %3.3f', self.epics_pvs['ZonePlateZ'].get())
+                            self.epics_pvs['ZonePlateZ'].put(vals[k],wait=True)                                                        
+                            log.info('new Zone plate Z %3.3f', self.epics_pvs['ZonePlateZ'].get())
+                        if pvs1[k]==self.epics_pvs['ZonePlateX'].pvname:                            
+                            log.info('old Zone plate X %3.3f', self.epics_pvs['ZonePlateX'].get())
+                            self.epics_pvs['ZonePlateX'].put(vals[k],wait=True)                                                        
+                            log.info('new Zone plate X %3.3f', self.epics_pvs['ZonePlateX'].get())
+                        #maybe  y too..                        
+                except:
+                    log.error('Calibration files are wrong.')
 
-    def set_condenser_to_zero(self):
-        """Set the condenser user coordinate to zero.
-        """
-        if(self.epics_pvs['CondenserSetUserCoordinateToZeroUse'].value):
-            self.epics_pvs['CondenserYSet'].put('Set', wait=True)
-            self.epics_pvs['CondenserY'].put(0, wait=True)
-            self.epics_pvs['CondenserYSet'].put('Use', wait=True)
-        self.epics_pvs['SetCondenserToZero'].put('Done')
+            self.epics_pvs['BPMVFeedback'].put(1)
+            self.epics_pvs['BPMHFeedback'].put(1)                      
+            log.info('energy change is done')
+            self.epics_pvs['EnergyBusy'].put(0)   
+            self.epics_pvs['EnergySet'].put(0)      
+            
+    def crop_detector(self):
+        """crop detector sizes"""
+        state = self.epics_pvs['CamAcquire'].get()
+        self.epics_pvs['CamAcquire'].put(0,wait=True)
 
-    def set_zone_plate_to_zero(self):
-        """Set the zone plate user coordinate to zero.
+        maxsizex = self.epics_pvs['CamMaxSizeXRBV'].get()
+        self.epics_pvs['CamMinX'].put(0,wait=True)        
+        
+        maxsizey = self.epics_pvs['CamMaxSizeYRBV'].get()
+        self.epics_pvs['CamMinY'].put(0,wait=True)        
+        
+        left = self.epics_pvs['CropLeft'].get()
+        top = self.epics_pvs['CropTop'].get()
+        
+        right = self.epics_pvs['CropRight'].get()        
+        self.epics_pvs['CamSizeX'].put(maxsizex-left-right,wait=True)
+        sizex = self.epics_pvs['CamSizeXRBV'].get()
+        right = maxsizex - left - sizex
+        self.epics_pvs['CropRight'].put(right,wait=True)
+
+        bottom = self.epics_pvs['CropBottom'].get()
+        self.epics_pvs['CamSizeY'].put(maxsizey-top-bottom,wait=True)
+        sizey = self.epics_pvs['CamSizeYRBV'].get()
+        bottom = maxsizey - top - sizey
+        self.epics_pvs['CropBottom'].put(bottom,wait=True)
+
+        self.epics_pvs['CamMinX'].put(left,wait=True)        
+        left = self.epics_pvs['CamMinXRBV'].get()
+        self.epics_pvs['CropLeft'].put(left,wait=True)
+
+        self.epics_pvs['CamMinY'].put(top,wait=True)        
+        top = self.epics_pvs['CamMinYRBV'].get()
+        self.epics_pvs['CropTop'].put(top,wait=True)                
+    
+
+        self.epics_pvs['CamAcquire'].put(state)  
+        self.cross_select()      
+        self.epics_pvs['Crop'].put(0,wait=True)  
+
+    def reset_watchdog(self):
+        """Sets the watchdog timer to 5 every 3 seconds"""
+        while True:
+            self.epics_pvs['Watchdog'].put(5)
+            time.sleep(3)  
+    
+    def wait_pv(self, epics_pv, wait_val, timeout=-1):
+        """Wait on a pv to be a value until max_timeout (default forever)
+           delay for pv to change
         """
-        if(self.epics_pvs['ZonePlateSetUserCoordinateToZeroUse'].value):
-            self.epics_pvs['ZonePlateYSet'].put('Set', wait=True)
-            self.epics_pvs['ZonePlateY'].put(0, wait=True)
-            self.epics_pvs['ZonePlateYSet'].put('Use', wait=True)
-        self.epics_pvs['SetZonePlateToZero'].put('Done')
+
+        time.sleep(.01)
+        start_time = time.time()
+        while True:
+            pv_val = epics_pv.get()
+            if isinstance(pv_val, float):
+                if abs(pv_val - wait_val) < EPSILON:
+                    return True
+            if pv_val != wait_val:
+                if timeout > -1:
+                    current_time = time.time()
+                    diff_time = current_time - start_time
+                    if diff_time >= timeout:
+                        log.error('  *** ERROR: DROPPED IMAGES ***')
+                        log.error('  *** wait_pv(%s, %d, %5.2f reached max timeout. Return False',
+                                      epics_pv.pvname, wait_val, timeout)
+                        return False
+                time.sleep(.01)
+            else:
+                return True

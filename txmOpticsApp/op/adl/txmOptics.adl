@@ -1,14 +1,14 @@
 
 file {
-	name="/home/beams/USERTXM/epics/synApps/support/txmoptics/txmOpticsApp/op/adl/txm_inout.adl"
+	name="/home/beams19/USERTXM/epics/synApps/support/txmoptics/iocBoot/iocTXMOptics/../../txmOpticsApp/op/adl/txmOptics.adl"
 	version=030111
 }
 display {
 	object {
-		x=604
-		y=432
+		x=1298
+		y=143
 		width=800
-		height=439
+		height=770
 	}
 	clr=14
 	bclr=4
@@ -90,8 +90,19 @@ display {
 rectangle {
 	object {
 		x=0
-		y=5
-		width=1100
+		y=512
+		width=800
+		height=30
+	}
+	"basic attribute" {
+		clr=2
+	}
+}
+rectangle {
+	object {
+		x=0
+		y=63
+		width=800
 		height=30
 	}
 	"basic attribute" {
@@ -100,8 +111,222 @@ rectangle {
 }
 text {
 	object {
-		x=250
-		y=3
+		x=117
+		y=512
+		width=600
+		height=30
+	}
+	"basic attribute" {
+		clr=54
+	}
+	textix="$(P)$(R)   Optics"
+	align="horiz. centered"
+}
+text {
+	object {
+		x=263
+		y=685
+		width=160
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Tube length (mm)"
+	align="horiz. right"
+}
+text {
+	object {
+		x=253
+		y=560
+		width=170
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Scintillator type"
+	align="horiz. right"
+}
+text {
+	object {
+		x=163
+		y=585
+		width=260
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Scint. thickness (microns)"
+	align="horiz. right"
+}
+text {
+	object {
+		x=163
+		y=610
+		width=260
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Image pixel size (nm)"
+	align="horiz. right"
+}
+text {
+	object {
+		x=133
+		y=635
+		width=290
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Detector pixel size (microns)"
+	align="horiz. right"
+}
+text {
+	object {
+		x=263
+		y=660
+		width=160
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Camera objective"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=428
+		y=585
+		width=230
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ScintillatorThickness"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=428
+		y=560
+		width=230
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ScintillatorType"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=428
+		y=635
+		width=230
+		height=20
+	}
+	control {
+		chan="$(P)$(R)DetectorPixelSize"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=428
+		y=660
+		width=230
+		height=20
+	}
+	control {
+		chan="$(P)$(R)CameraObjective"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=428
+		y=685
+		width=230
+		height=20
+	}
+	control {
+		chan="$(P)$(R)CameraTubeLength"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"text entry" {
+	object {
+		x=428
+		y=610
+		width=230
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ImagePixelSize"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+"related display" {
+	object {
+		x=154
+		y=9
+		width=50
+		height=20
+	}
+	display[0] {
+		label="Epics PV Names"
+		name="txmOpticsEPICS_PVs.adl"
+		args="P=$(P), R=$(R)"
+	}
+	clr=14
+	bclr=51
+}
+text {
+	object {
+		x=9
+		y=11
+		width=140
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="Epics PV names"
+}
+text {
+	object {
+		x=117
+		y=64
 		width=600
 		height=30
 	}
@@ -113,8 +338,8 @@ text {
 }
 text {
 	object {
-		x=5
-		y=99
+		x=3
+		y=164
 		width=160
 		height=20
 	}
@@ -126,8 +351,8 @@ text {
 }
 text {
 	object {
-		x=5
-		y=128
+		x=3
+		y=193
 		width=160
 		height=20
 	}
@@ -139,8 +364,8 @@ text {
 }
 text {
 	object {
-		x=5
-		y=157
+		x=3
+		y=222
 		width=160
 		height=20
 	}
@@ -152,8 +377,8 @@ text {
 }
 text {
 	object {
-		x=6
-		y=191
+		x=4
+		y=256
 		width=160
 		height=20
 	}
@@ -165,8 +390,8 @@ text {
 }
 text {
 	object {
-		x=5
-		y=69
+		x=3
+		y=134
 		width=160
 		height=20
 	}
@@ -178,8 +403,8 @@ text {
 }
 text {
 	object {
-		x=164
-		y=41
+		x=162
+		y=106
 		width=130
 		height=20
 	}
@@ -191,8 +416,8 @@ text {
 }
 text {
 	object {
-		x=288
-		y=41
+		x=286
+		y=106
 		width=130
 		height=20
 	}
@@ -204,8 +429,8 @@ text {
 }
 "text entry" {
 	object {
-		x=182
-		y=71
+		x=180
+		y=136
 		width=100
 		height=20
 	}
@@ -219,8 +444,8 @@ text {
 }
 "text entry" {
 	object {
-		x=306
-		y=71
+		x=304
+		y=136
 		width=100
 		height=20
 	}
@@ -234,8 +459,8 @@ text {
 }
 "text entry" {
 	object {
-		x=182
-		y=159
+		x=180
+		y=224
 		width=100
 		height=20
 	}
@@ -249,8 +474,8 @@ text {
 }
 "text entry" {
 	object {
-		x=306
-		y=159
+		x=304
+		y=224
 		width=100
 		height=20
 	}
@@ -264,8 +489,8 @@ text {
 }
 "text entry" {
 	object {
-		x=182
-		y=130
+		x=180
+		y=195
 		width=100
 		height=20
 	}
@@ -279,8 +504,8 @@ text {
 }
 "text entry" {
 	object {
-		x=306
-		y=130
+		x=304
+		y=195
 		width=100
 		height=20
 	}
@@ -294,8 +519,8 @@ text {
 }
 "text entry" {
 	object {
-		x=182
-		y=101
+		x=180
+		y=166
 		width=100
 		height=20
 	}
@@ -309,8 +534,8 @@ text {
 }
 "text entry" {
 	object {
-		x=306
-		y=101
+		x=304
+		y=166
 		width=100
 		height=20
 	}
@@ -324,8 +549,8 @@ text {
 }
 "text entry" {
 	object {
-		x=183
-		y=191
+		x=181
+		y=256
 		width=100
 		height=20
 	}
@@ -339,8 +564,8 @@ text {
 }
 "text entry" {
 	object {
-		x=307
-		y=191
+		x=305
+		y=256
 		width=100
 		height=20
 	}
@@ -354,8 +579,8 @@ text {
 }
 "choice button" {
 	object {
-		x=420
-		y=71
+		x=418
+		y=136
 		width=100
 		height=20
 	}
@@ -368,8 +593,8 @@ text {
 }
 "choice button" {
 	object {
-		x=420
-		y=101
+		x=418
+		y=166
 		width=100
 		height=20
 	}
@@ -382,8 +607,8 @@ text {
 }
 "choice button" {
 	object {
-		x=420
-		y=131
+		x=418
+		y=196
 		width=100
 		height=20
 	}
@@ -396,8 +621,8 @@ text {
 }
 "choice button" {
 	object {
-		x=420
-		y=161
+		x=418
+		y=226
 		width=100
 		height=20
 	}
@@ -410,8 +635,8 @@ text {
 }
 "choice button" {
 	object {
-		x=420
-		y=191
+		x=418
+		y=256
 		width=100
 		height=20
 	}
@@ -424,8 +649,8 @@ text {
 }
 text {
 	object {
-		x=433
-		y=41
+		x=431
+		y=106
 		width=60
 		height=20
 	}
@@ -437,8 +662,8 @@ text {
 }
 text {
 	object {
-		x=5
-		y=305
+		x=3
+		y=370
 		width=160
 		height=20
 	}
@@ -450,8 +675,8 @@ text {
 }
 "text entry" {
 	object {
-		x=182
-		y=305
+		x=180
+		y=370
 		width=100
 		height=20
 	}
@@ -465,8 +690,8 @@ text {
 }
 "text entry" {
 	object {
-		x=306
-		y=305
+		x=304
+		y=370
 		width=100
 		height=20
 	}
@@ -480,8 +705,8 @@ text {
 }
 "choice button" {
 	object {
-		x=420
-		y=305
+		x=418
+		y=370
 		width=100
 		height=20
 	}
@@ -494,8 +719,8 @@ text {
 }
 text {
 	object {
-		x=437
-		y=281
+		x=435
+		y=346
 		width=60
 		height=20
 	}
@@ -507,8 +732,8 @@ text {
 }
 text {
 	object {
-		x=294
-		y=281
+		x=292
+		y=346
 		width=130
 		height=20
 	}
@@ -520,8 +745,8 @@ text {
 }
 text {
 	object {
-		x=170
-		y=281
+		x=168
+		y=346
 		width=130
 		height=20
 	}
@@ -533,8 +758,8 @@ text {
 }
 text {
 	object {
-		x=5
-		y=369
+		x=3
+		y=434
 		width=160
 		height=20
 	}
@@ -546,8 +771,8 @@ text {
 }
 "text entry" {
 	object {
-		x=182
-		y=391
+		x=180
+		y=456
 		width=100
 		height=20
 	}
@@ -561,8 +786,8 @@ text {
 }
 "text entry" {
 	object {
-		x=293
-		y=391
+		x=291
+		y=456
 		width=100
 		height=20
 	}
@@ -576,8 +801,8 @@ text {
 }
 "choice button" {
 	object {
-		x=671
-		y=389
+		x=669
+		y=454
 		width=100
 		height=20
 	}
@@ -590,8 +815,8 @@ text {
 }
 text {
 	object {
-		x=682
-		y=354
+		x=680
+		y=419
 		width=60
 		height=20
 	}
@@ -603,8 +828,8 @@ text {
 }
 text {
 	object {
-		x=227
-		y=343
+		x=225
+		y=408
 		width=130
 		height=20
 	}
@@ -616,8 +841,8 @@ text {
 }
 "text entry" {
 	object {
-		x=438
-		y=391
+		x=436
+		y=456
 		width=100
 		height=20
 	}
@@ -631,8 +856,8 @@ text {
 }
 "text entry" {
 	object {
-		x=550
-		y=391
+		x=548
+		y=456
 		width=100
 		height=20
 	}
@@ -646,8 +871,8 @@ text {
 }
 text {
 	object {
-		x=170
-		y=366
+		x=168
+		y=431
 		width=130
 		height=20
 	}
@@ -659,8 +884,8 @@ text {
 }
 text {
 	object {
-		x=279
-		y=366
+		x=277
+		y=431
 		width=130
 		height=20
 	}
@@ -672,8 +897,8 @@ text {
 }
 text {
 	object {
-		x=424
-		y=366
+		x=422
+		y=431
 		width=130
 		height=20
 	}
@@ -685,8 +910,8 @@ text {
 }
 text {
 	object {
-		x=481
-		y=343
+		x=479
+		y=408
 		width=130
 		height=20
 	}
@@ -698,8 +923,8 @@ text {
 }
 text {
 	object {
-		x=533
-		y=366
+		x=531
+		y=431
 		width=130
 		height=20
 	}
@@ -711,8 +936,8 @@ text {
 }
 composite {
 	object {
-		x=581
-		y=67
+		x=579
+		y=132
 		width=171
 		height=199
 	}
@@ -720,8 +945,8 @@ composite {
 	children {
 		"choice button" {
 			object {
-				x=652
-				y=99
+				x=650
+				y=164
 				width=100
 				height=20
 			}
@@ -734,8 +959,8 @@ composite {
 		}
 		"choice button" {
 			object {
-				x=652
-				y=120
+				x=650
+				y=185
 				width=100
 				height=20
 			}
@@ -748,8 +973,8 @@ composite {
 		}
 		"choice button" {
 			object {
-				x=652
-				y=141
+				x=650
+				y=206
 				width=100
 				height=20
 			}
@@ -762,8 +987,8 @@ composite {
 		}
 		"choice button" {
 			object {
-				x=652
-				y=162
+				x=650
+				y=227
 				width=100
 				height=20
 			}
@@ -776,8 +1001,8 @@ composite {
 		}
 		"choice button" {
 			object {
-				x=652
-				y=183
+				x=650
+				y=248
 				width=100
 				height=20
 			}
@@ -790,8 +1015,8 @@ composite {
 		}
 		"choice button" {
 			object {
-				x=652
-				y=204
+				x=650
+				y=269
 				width=100
 				height=20
 			}
@@ -804,8 +1029,8 @@ composite {
 		}
 		"choice button" {
 			object {
-				x=652
-				y=225
+				x=650
+				y=290
 				width=100
 				height=20
 			}
@@ -818,8 +1043,8 @@ composite {
 		}
 		"choice button" {
 			object {
-				x=652
-				y=246
+				x=650
+				y=311
 				width=100
 				height=20
 			}
@@ -832,8 +1057,8 @@ composite {
 		}
 		text {
 			object {
-				x=581
-				y=120
+				x=579
+				y=185
 				width=50
 				height=20
 			}
@@ -845,8 +1070,8 @@ composite {
 		}
 		text {
 			object {
-				x=581
-				y=99
+				x=579
+				y=164
 				width=50
 				height=20
 			}
@@ -858,8 +1083,8 @@ composite {
 		}
 		text {
 			object {
-				x=581
-				y=141
+				x=579
+				y=206
 				width=50
 				height=20
 			}
@@ -871,8 +1096,8 @@ composite {
 		}
 		text {
 			object {
-				x=581
-				y=162
+				x=579
+				y=227
 				width=50
 				height=20
 			}
@@ -884,8 +1109,8 @@ composite {
 		}
 		text {
 			object {
-				x=581
-				y=183
+				x=579
+				y=248
 				width=50
 				height=20
 			}
@@ -897,8 +1122,8 @@ composite {
 		}
 		text {
 			object {
-				x=581
-				y=204
+				x=579
+				y=269
 				width=50
 				height=20
 			}
@@ -910,8 +1135,8 @@ composite {
 		}
 		text {
 			object {
-				x=581
-				y=225
+				x=579
+				y=290
 				width=50
 				height=20
 			}
@@ -923,8 +1148,8 @@ composite {
 		}
 		text {
 			object {
-				x=581
-				y=246
+				x=579
+				y=311
 				width=50
 				height=20
 			}
@@ -936,8 +1161,8 @@ composite {
 		}
 		text {
 			object {
-				x=671
-				y=67
+				x=669
+				y=132
 				width=60
 				height=20
 			}
@@ -951,8 +1176,8 @@ composite {
 }
 text {
 	object {
-		x=5
-		y=221
+		x=3
+		y=286
 		width=160
 		height=20
 	}
@@ -964,8 +1189,8 @@ text {
 }
 "text entry" {
 	object {
-		x=182
-		y=221
+		x=180
+		y=286
 		width=100
 		height=20
 	}
@@ -979,8 +1204,8 @@ text {
 }
 "text entry" {
 	object {
-		x=306
-		y=221
+		x=304
+		y=286
 		width=100
 		height=20
 	}
@@ -994,8 +1219,8 @@ text {
 }
 "choice button" {
 	object {
-		x=420
-		y=221
+		x=418
+		y=286
 		width=100
 		height=20
 	}
@@ -1008,8 +1233,8 @@ text {
 }
 text {
 	object {
-		x=5
-		y=251
+		x=3
+		y=316
 		width=160
 		height=20
 	}
@@ -1021,8 +1246,8 @@ text {
 }
 "text entry" {
 	object {
-		x=182
-		y=251
+		x=180
+		y=316
 		width=100
 		height=20
 	}
@@ -1036,8 +1261,8 @@ text {
 }
 "text entry" {
 	object {
-		x=306
-		y=251
+		x=304
+		y=316
 		width=100
 		height=20
 	}
@@ -1051,8 +1276,8 @@ text {
 }
 "choice button" {
 	object {
-		x=420
-		y=251
+		x=418
+		y=316
 		width=100
 		height=20
 	}
@@ -1062,4 +1287,62 @@ text {
 		bclr=51
 	}
 	stacking="column"
+}
+"text entry" {
+	object {
+		x=428
+		y=735
+		width=230
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ZPOutermostZoneWidth"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
+}
+text {
+	object {
+		x=263
+		y=735
+		width=160
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="ZP outermost zone width (nm)"
+	align="horiz. right"
+}
+text {
+	object {
+		x=263
+		y=710
+		width=160
+		height=20
+	}
+	"basic attribute" {
+		clr=14
+	}
+	textix="ZP description"
+	align="horiz. right"
+}
+"text entry" {
+	object {
+		x=428
+		y=710
+		width=230
+		height=20
+	}
+	control {
+		chan="$(P)$(R)ZPDescription"
+		clr=14
+		bclr=51
+	}
+	format="string"
+	limits {
+	}
 }

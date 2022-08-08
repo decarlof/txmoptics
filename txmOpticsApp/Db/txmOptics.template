@@ -10,6 +10,11 @@ record(stringout, "$(P)$(R)CameraPVPrefix")
    field(VAL,  "$(CAMERA)")
 }
 
+record(stringout, "$(P)$(R)OverlayPluginPVPrefix")
+{
+   field(VAL,  "$(OVERLAY)")
+}
+
 ##################################################
 # CRL Relays, Valves PLC, Shaker and BPM PV Prefix
 ##################################################
@@ -108,6 +113,21 @@ record(stringout, "$(P)$(R)CondenserYawPVName")
    field(VAL,  "$(CONDENSER_YAW)")
 }
 
+record(stringout, "$(P)$(R)DetectorXPVName")
+{
+   field(VAL,  "$(DETECTOR_X)")
+}
+
+record(stringout, "$(P)$(R)DetectorYPVName")
+{
+   field(VAL,  "$(DETECTOR_Y)")
+}
+
+record(stringout, "$(P)$(R)DetectorZPVName")
+{
+   field(VAL,  "$(DETECTOR_Z)")
+}
+
 record(stringout, "$(P)$(R)ZonePlateXPVName")
 {
    field(VAL,  "$(ZONEPLATE_X)")
@@ -133,6 +153,20 @@ record(stringout, "$(P)$(R)PhaseRingYPVName")
    field(VAL,  "$(PHASERING_Y)")
 }
 
+record(stringout, "$(P)$(R)FurnaceXPVName")
+{
+   field(VAL,  "$(FURNACE_X)")
+}
+
+record(stringout, "$(P)$(R)FurnaceYPVName")
+{
+   field(VAL,  "$(FURNACE_Y)")
+}
+
+record(stringout, "$(P)$(R)FurnaceZPVName")
+{
+   field(VAL,  "$(FURNACE_Z)")
+}
 
 ###################################
 # Optics control via Channel Access
@@ -234,16 +268,22 @@ record(busy, "$(P)$(R)MovePhaseRingOut")
    field(ONAM, "Move")
 }
 
+record(busy, "$(P)$(R)MoveFurnaceIn")
+{
+   field(ZNAM, "Done")
+   field(ONAM, "Move")
+}
+
+record(busy, "$(P)$(R)MoveFurnaceOut")
+{
+   field(ZNAM, "Done")
+   field(ONAM, "Move")
+}
+
 record(bo, "$(P)$(R)AllStop")
 {
    field(ZNAM, "release")
    field(ONAM, "stop")
-}
-
-record(busy, "$(P)$(R)SetAllToZero")
-{
-   field(ZNAM, "Done")
-   field(ONAM, "Set")
 }
 
 ################
@@ -320,6 +360,16 @@ record(ao, "$(P)$(R)PhaseRingOutY")
    field(PREC,  "3")
 }
 
+record(ao, "$(P)$(R)FurnaceInY")
+{
+   field(PREC,  "3")
+}
+
+record(ao, "$(P)$(R)FurnaceOutY")
+{
+   field(PREC,  "3")
+}
+
 record(ao, "$(P)$(R)ExposureTimeIn")
 {
    field(PREC,  "3")
@@ -328,42 +378,6 @@ record(ao, "$(P)$(R)ExposureTimeIn")
 record(ao, "$(P)$(R)ExposureTimeOut")
 {
    field(PREC,  "3")
-}
-
-record(busy, "$(P)$(R)SetPhaseRingToZero")
-{
-   field(ZNAM, "Done")
-   field(ONAM, "Set")
-}
-
-record(busy, "$(P)$(R)SetDiffuserToZero")
-{
-   field(ZNAM, "Done")
-   field(ONAM, "Set")
-}
-
-record(busy, "$(P)$(R)SetBeamstopToZero")
-{
-   field(ZNAM, "Done")
-   field(ONAM, "Set")
-}
-
-record(busy, "$(P)$(R)SetPinholeToZero")
-{
-   field(ZNAM, "Done")
-   field(ONAM, "Set")
-}
-
-record(busy, "$(P)$(R)SetCondenserToZero")
-{
-   field(ZNAM, "Done")
-   field(ONAM, "Set")
-}
-
-record(busy, "$(P)$(R)SetZonePlateToZero")
-{
-   field(ZNAM, "Done")
-   field(ONAM, "Set")
 }
 
 ###################
@@ -453,50 +467,19 @@ record(bo, "$(P)$(R)PhaseRingInOutUse")
    field(ONAM, "Yes")
 }
 
+record(bo, "$(P)$(R)FurnaceInOutUse")
+{
+   field(ZNAM, "No")
+   field(ONAM, "Yes")
+}
+
+
 record(bo, "$(P)$(R)ExposureTimeInOutUse")
 {
    field(ZNAM, "No")
    field(ONAM, "Yes")
 }
 
-####################################
-# Optics Set User Coordinate to zero
-####################################
-record(bo, "$(P)$(R)DiffuserSetUserCoordinateToZeroUse")
-{
-   field(ZNAM, "No")
-   field(ONAM, "Yes")
-}
-
-record(bo, "$(P)$(R)BeamstopSetUserCoordinateToZeroUse")
-{
-   field(ZNAM, "No")
-   field(ONAM, "Yes")
-}
-
-record(bo, "$(P)$(R)PinholeSetUserCoordinateToZeroUse")
-{
-   field(ZNAM, "No")
-   field(ONAM, "Yes")
-}
-
-record(bo, "$(P)$(R)CondenserSetUserCoordinateToZeroUse")
-{
-   field(ZNAM, "No")
-   field(ONAM, "Yes")
-}
-
-record(bo, "$(P)$(R)ZonePlateSetUserCoordinateToZeroUse")
-{
-   field(ZNAM, "No")
-   field(ONAM, "Yes")
-}
-
-record(bo, "$(P)$(R)PhaseRingSetUserCoordinateToZeroUse")
-{
-   field(ZNAM, "No")
-   field(ONAM, "Yes")
-}
 
 ################################
 # TXM SUPPORTING IOC PV Prefixes
@@ -559,4 +542,223 @@ record(bo, "$(P)$(R)BPMSetPointInOutUse")
 {
    field(ZNAM, "No")
    field(ONAM, "Yes")
+}
+
+record(busy, "$(P)$(R)SaveAllPVs")
+{
+   field(ZNAM, "Done")
+   field(ONAM, "Save")
+}
+
+record(busy, "$(P)$(R)LoadAllPVs")
+{
+   field(ZNAM, "Done")
+   field(ONAM, "Load")
+}
+
+record(stringout, "$(P)$(R)FileAllPVs")
+{
+   field(VAL,  "$(FILE_ALL_PVS)")
+}
+
+###############
+# Energy change
+###############
+record(stringout, "$(P)$(R)DCMmvtPVName")
+{
+   field(VAL,  "$(KOHZUMODE)")
+}
+
+record(stringout, "$(P)$(R)GAPputEnergyPVName")
+{
+   field(VAL,  "$(USENERGY)")
+}
+
+record(stringout, "$(P)$(R)GAPputEnergyRBVPVName")
+{
+   field(VAL,  "$(USENERGYRBV)")
+}
+
+record(stringout, "$(P)$(R)DCMputEnergyPVName")
+{
+   field(VAL,  "$(BRAGG)")
+}
+record(stringout, "$(P)$(R)DCMputEnergyRBVPVName")
+{
+   field(VAL,  "$(BRAGGRBV)")
+}
+record(stringout, "$(P)$(R)DCMmoveEnergyPVName")
+{
+   field(VAL,  "$(BRAGGMOVE)")
+}
+record(busy,"$(P)$(R)EnergySet")
+{
+   field(ZNAM,"Done")
+   field(ZSV, "NO_ALARM")
+   field(ONAM,"Set")
+   field(OSV, "MINOR")
+   field(VAL, "0")
+}
+record(ao, "$(P)$(R)Energy")
+{
+   field(PREC,  "4")
+   field(VAL,  "8")
+   field(HOPR, "14")
+   field(LOPR, "6")
+}
+record(busy, "$(P)$(R)EnergyBusy")
+{
+   field(ZNAM, "Done")
+   field(ONAM, "Busy")
+}
+record(mbbo, "$(P)$(R)EnergyUseCalibration") {
+  field(DTYP, "Raw Soft Channel")
+  field(NOBT, "3")
+  field(ZRVL, "0x0")
+  field(ONVL, "0x1")
+  field(ZRST, "Yes")
+  field(ONST, "No")
+}
+record(stringout, "$(P)$(R)EnergyCalibrationFileOne")
+{
+   field(VAL,  "$(EN_FILE1)")
+}
+record(stringout, "$(P)$(R)EnergyCalibrationFileTwo")
+{
+   field(VAL,  "$(EN_FILE2)")
+}
+
+######################
+# Detector image cross
+######################
+
+record(mbbo, "$(P)$(R)CrossSelect") {
+  field(DTYP, "Raw Soft Channel")
+  field(NOBT, "3")
+  field(ZRVL, "0x0")
+  field(ONVL, "0x1")
+  field(ZRST, "Yes")
+  field(ONST, "No")
+}
+
+##########################
+# Shutter callback for BPM
+##########################
+
+record(mbbo, "$(P)$(R)ShutterCallback") {
+  field(DTYP, "Raw Soft Channel")
+  field(NOBT, "3")
+  field(ZRVL, "0x0")
+  field(ONVL, "0x1")
+  field(ZRST, "Yes")
+  field(ONST, "No")
+}
+
+record(stringout, "$(P)$(R)ShutterBClosePVName")
+{
+   field(VAL,  "$(SHUTTER_B_CLOSE)")
+}
+
+record(stringout, "$(P)$(R)ShutterBStatusPVName")
+{
+   field(VAL,  "$(SHUTTER_B_STATUS)")
+}
+
+############
+# Status PVs
+############
+
+record(calcout, "$(P)$(R)Watchdog")
+{
+   field(SCAN, "1 second")
+   field(INPA, "$(P)$(R)Watchdog.VAL NPP")
+   field(CALC, "A-1")
+   field(OCAL, "A>0?1:0")
+   field(OOPT, "On Change")
+   field(DOPT, "Use OCAL")
+   field(OUT,  "$(P)$(R)ServerRunning PP")
+}
+
+record(bi, "$(P)$(R)ServerRunning")
+{
+   field(ZNAM, "Stopped")
+   field(ZSV,  "MAJOR")
+   field(ONAM, "Running")
+   field(OSV,  "NO_ALARM")
+}
+
+record(waveform,"$(P)$(R)TXMOpticsStatus") 
+{
+   field(FTVL, "UCHAR")
+   field(NELM, "256")
+}
+
+####################
+# Optics information
+####################
+
+record(stringout, "$(P)$(R)ScintillatorType")
+{
+   field(VAL,  "Unknown")
+}
+
+record(ao, "$(P)$(R)ScintillatorThickness")
+{
+   field(PREC,  "0")
+}
+
+record(ao, "$(P)$(R)ImagePixelSize")
+{
+   field(PREC, "2")
+   field(EGU,  "microns")
+}
+
+record(ao, "$(P)$(R)DetectorPixelSize")
+{
+   field(PREC, "2")
+   field(EGU,  "microns")
+}
+
+record(stringout, "$(P)$(R)CameraObjective")
+{
+   field(VAL,  "Unknown")
+}
+
+record(ao, "$(P)$(R)CameraTubeLength")
+{
+   field(PREC, "0")
+   field(EGU,  "mm")
+}
+
+record(stringout, "$(P)$(R)ZPDescription")
+{
+   field(VAL,  "Unknown")
+}
+
+record(ao, "$(P)$(R)ZPOutermostZoneWidth")
+{
+   field(PREC, "0")
+   field(EGU,  "nm")
+}
+
+record(longout, "$(P)$(R)CropLeft")
+{
+}
+
+record(longout, "$(P)$(R)CropRight")
+{
+}
+
+record(longout, "$(P)$(R)CropTop")
+{
+}
+
+record(longout, "$(P)$(R)CropBottom")
+{
+}
+
+record(busy, "$(P)$(R)Crop")
+{
+   field(ZNAM, "Done")
+   field(ONAM, "Crop")
 }

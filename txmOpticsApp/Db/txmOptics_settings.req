@@ -12,6 +12,7 @@
 # Camera and File Plugin PV Prefixes
 ####################################
 $(P)$(R)CameraPVPrefix
+$(P)$(R)OverlayPluginPVPrefix
 
 ##################################################
 # CRL Relays, Valves PLC, Shaker and BPM PV Prefix
@@ -38,17 +39,21 @@ $(P)$(R)CondenserPitchPVName
 $(P)$(R)CondenserYawPVName
 $(P)$(R)PinholeXPVName
 $(P)$(R)PinholeYPVName
+$(P)$(R)DetectorXPVName
+$(P)$(R)DetectorYPVName
+$(P)$(R)DetectorZPVName
 $(P)$(R)ZonePlateXPVName
 $(P)$(R)ZonePlateYPVName
 $(P)$(R)ZonePlateZPVName
 $(P)$(R)PhaseRingXPVName
 $(P)$(R)PhaseRingYPVName
+$(P)$(R)FurnaceXPVName
+$(P)$(R)FurnaceYPVName
+$(P)$(R)FurnaceZPVName
 
 ###################################
 # Optics control via Channel Access
 ###################################
-#controlPV $(P)$(R)MoveAllIn
-#controlPV $(P)$(R)MoveAllOut
 #controlPV $(P)$(R)MoveCRLIn
 #controlPV $(P)$(R)MoveCRLOut
 #controlPV $(P)$(R)MoveDiffuserIn
@@ -63,8 +68,11 @@ $(P)$(R)PhaseRingYPVName
 #controlPV $(P)$(R)MoveZonePlateOut
 #controlPV $(P)$(R)MovePhaseRingIn
 #controlPV $(P)$(R)MovePhaseRingOut
+#controlPV $(P)$(R)MoveFurnaceIn
+#controlPV $(P)$(R)MoveFurnaceOut
+#controlPV $(P)$(R)MoveAllIn
+#controlPV $(P)$(R)MoveAllOut
 #controlPV $(P)$(R)AllStop
-#controlPV $(P)$(R)SetAllToZero
 
 ################
 # Optics control
@@ -83,14 +91,11 @@ $(P)$(R)PhaseRingInX
 $(P)$(R)PhaseRingOutX
 $(P)$(R)PhaseRingInY
 $(P)$(R)PhaseRingOutY
+$(P)$(R)FurnaceInY
+$(P)$(R)FurnaceOutY
+
 $(P)$(R)ExposureTimeIn
 $(P)$(R)ExposureTimeOut
-$(P)$(R)SetPhaseRingToZero
-$(P)$(R)SetDiffuserToZero
-$(P)$(R)SetBeamstopToZero
-$(P)$(R)SetPinholeToZero
-$(P)$(R)SetCondenserToZero
-$(P)$(R)SetZonePlateToZero
 
 ###################
 # Optics In/Out Use
@@ -109,17 +114,9 @@ $(P)$(R)PinholeInOutUse
 $(P)$(R)CondenserInOutUse
 $(P)$(R)ZonePlateInOutUse
 $(P)$(R)PhaseRingInOutUse
+$(P)$(R)FurnaceInOutUse
 $(P)$(R)ExposureTimeInOutUse
 
-####################################
-# Optics Set User Coordinate to zero
-####################################
-$(P)$(R)DiffuserSetUserCoordinateToZeroUse
-$(P)$(R)BeamstopSetUserCoordinateToZeroUse
-$(P)$(R)PinholeSetUserCoordinateToZeroUse
-$(P)$(R)CondenserSetUserCoordinateToZeroUse
-$(P)$(R)ZonePlateSetUserCoordinateToZeroUse
-$(P)$(R)PhaseRingSetUserCoordinateToZeroUse
 
 ################################
 # TXM SUPPORTING IOC PV Prefixes
@@ -139,3 +136,68 @@ $(P)$(R)BPMHSetPointIn
 $(P)$(R)BPMVSetPointOut
 $(P)$(R)BPMHSetPointOut
 $(P)$(R)BPMSetPointInOutUse
+
+
+###########################
+# Save/Load all pvs in medm
+###########################
+$(P)$(R)SaveAllPVs
+$(P)$(R)LoadAllPVs
+$(P)$(R)FileAllPVs
+
+######################
+# Detector image cross
+######################
+$(P)$(R)CrossSelect
+
+###############
+# Energy change
+###############
+$(P)$(R)EnergySet
+$(P)$(R)Energy
+$(P)$(R)EnergyBusy
+$(P)$(R)EnergyUseCalibration
+$(P)$(R)EnergyCalibrationFileOne
+$(P)$(R)EnergyCalibrationFileTwo
+$(P)$(R)DCMmvtPVName
+$(P)$(R)GAPputEnergyPVName
+$(P)$(R)GAPputEnergyRBVPVName
+$(P)$(R)DCMputEnergyPVName
+$(P)$(R)DCMputEnergyRBVPVName
+$(P)$(R)DCMmoveEnergyPVName
+
+
+##########################
+# Shutter callback for BPM
+##########################
+$(P)$(R)ShutterCallback
+$(P)$(R)ShutterBClosePVName
+$(P)$(R)ShutterBStatusPVName
+
+############
+# Status PVs
+############
+$(P)$(R)Watchdog
+$(P)$(R)ServerRunning
+$(P)$(R)TXMOpticsStatus
+
+####################
+# Optics information
+####################
+$(P)$(R)ScintillatorType
+$(P)$(R)ScintillatorThickness
+$(P)$(R)ImagePixelSize
+$(P)$(R)DetectorPixelSize
+$(P)$(R)CameraObjective
+$(P)$(R)CameraTubeLength
+$(P)$(R)ZPDescription
+$(P)$(R)ZPOutermostZoneWidth
+
+####################
+# Detector cropping
+####################
+$(P)$(R)CropLeft
+$(P)$(R)CropRight
+$(P)$(R)CropTop
+$(P)$(R)CropBottom
+$(P)$(R)Crop
